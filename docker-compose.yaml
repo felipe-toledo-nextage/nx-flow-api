@@ -1,0 +1,17 @@
+volumes:
+  postgres-nextage-ai:
+    driver: local
+
+services:
+  postgres-nextage-ai:
+    container_name: postgres-nextage-ai
+    image: postgres:17-alpine
+    restart: unless-stopped
+    volumes:
+      - postgres-nextage-ai:/var/lib/postgresql/data
+    ports:
+      - '5444:5432'
+    environment:
+      POSTGRES_DB: nextage_ai
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
