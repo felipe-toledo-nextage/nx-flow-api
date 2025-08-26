@@ -6,6 +6,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
+import { JiraModule } from './integrations/jira/jira.module';
 import { User } from './users/entities/user.entity';
 import { Project } from './projects/entities/project.entity';
 import { SeederService } from './database/seeder.service';
@@ -35,6 +36,7 @@ import { UserSeed } from './database/seeds/user.seed';
     AuthModule,
     UsersModule,
     ProjectsModule,
+    JiraModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeederService, UserSeed],

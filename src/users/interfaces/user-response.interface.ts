@@ -1,7 +1,7 @@
 import { User } from '../entities/user.entity';
 
 export interface UserResponse {
-  id: string;
+  id: number;
   name: string;
   email: string;
   role: string;
@@ -25,7 +25,7 @@ export interface PaginatedUsersResponse {
 }
 
 export interface UserProfileResponse {
-  id: string;
+  id: number;
   name: string;
   email: string;
   role: string;

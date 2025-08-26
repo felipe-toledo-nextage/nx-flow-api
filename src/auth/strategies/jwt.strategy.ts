@@ -19,7 +19,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload) {
-    const user = await this.usersService.findById(payload.sub);
+    // Verificar se o payload contém UUID (tokens antigos)
+    if (typeof payload.sub === 'string' && payload.sub.includes('-')) {
+      throw new UnauthorizedException('Token expirado - faça login novamente');
+    }
+
+    // Garantir que sub seja number
+    const userId = typeof payload.sub === 'string' ? parseInt(payload.sub, 10) : payload.sub;
+    
+    if (isNaN(userId)) {
+      throw new UnauthorizedException('Token inválido');
+    }
+
+    const user = await this.usersService.findById(userId);
     
     if (!user) {
       throw new UnauthorizedException('Token inválido');
@@ -29,6 +41,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       id: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     };
   }
 }

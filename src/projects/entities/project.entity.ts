@@ -5,7 +5,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   ManyToOne,
+  ManyToMany,
   JoinColumn,
+  JoinTable,
   OneToMany,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
@@ -32,8 +34,8 @@ export enum ProjectPriority {
 
 @Entity('projects')
 export class Project {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ type: 'varchar', length: 255 })
   name: string;
@@ -62,14 +64,6 @@ export class Project {
   })
   priority: ProjectPriority;
 
-  @Column({ type: 'int', default: 0 })
-  progress: number;
-
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  velocity: number;
-
-  @Column({ type: 'decimal', precision: 5, scale: 2, default: 0 })
-  scopeDelivered: number;
 
   @Column({ type: 'date', nullable: true })
   startDate?: Date;
@@ -82,7 +76,7 @@ export class Project {
   jiraUrl?: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
-  jiraUsername?: string;
+  jiraEmail?: string;
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   jiraApiToken?: string;
@@ -90,18 +84,7 @@ export class Project {
   @Column({ type: 'varchar', length: 255, nullable: true })
   jiraProjectKey?: string;
 
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  jiraBoardId?: string;
-
   // Configurações adicionais
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  repositoryUrl?: string;
-
-  @Column({ type: 'varchar', length: 255, nullable: true })
-  documentationUrl?: string;
-
-  @Column({ type: 'jsonb', nullable: true })
-  tags?: string[];
 
   @Column({ type: 'jsonb', nullable: true })
   settings?: Record<string, any>;
@@ -114,6 +97,20 @@ export class Project {
   @ManyToOne(() => User, { nullable: true })
   @JoinColumn({ name: 'manager_id' })
   manager?: User;
+
+  @ManyToMany(() => User, user => user.clientProjects)
+  @JoinTable({
+    name: 'project_clients',
+    joinColumn: {
+      name: 'project_id',
+      referencedColumnName: 'id'
+    },
+    inverseJoinColumn: {
+      name: 'client_id',
+      referencedColumnName: 'id'
+    }
+  })
+  clients: User[];
 
   @CreateDateColumn()
   createdAt: Date;

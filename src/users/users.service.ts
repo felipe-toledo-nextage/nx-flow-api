@@ -56,7 +56,7 @@ export class UsersService {
     };
   }
 
-  async findById(id: string): Promise<User | null> {
+  async findById(id: number): Promise<User | null> {
     return this.usersRepository.findOne({ where: { id } });
   }
 
@@ -64,7 +64,7 @@ export class UsersService {
     return this.usersRepository.findOne({ where: { email } });
   }
 
-  async findByIdWithPassword(id: string): Promise<User | null> {
+  async findByIdWithPassword(id: number): Promise<User | null> {
     return this.usersRepository.findOne({ 
       where: { id },
       select: ['id', 'name', 'email', 'password', 'role', 'status', 'phone', 'avatar', 'lastLoginAt', 'emailVerifiedAt', 'createdAt', 'updatedAt']
@@ -88,7 +88,7 @@ export class UsersService {
     return this.usersRepository.save(user);
   }
 
-  async update(id: string, updateUserDto: UpdateUserDto): Promise<User> {
+  async update(id: number, updateUserDto: UpdateUserDto): Promise<User> {
     const user = await this.findById(id);
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -115,7 +115,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  async delete(id: string): Promise<void> {
+  async delete(id: number): Promise<void> {
     const user = await this.findById(id);
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -124,16 +124,16 @@ export class UsersService {
     await this.usersRepository.remove(user);
   }
 
-  async updateLastLogin(id: string): Promise<void> {
+  async updateLastLogin(id: number): Promise<void> {
     await this.usersRepository.update(id, { lastLoginAt: new Date() });
   }
 
-  async updatePassword(id: string, newPassword: string): Promise<void> {
+  async updatePassword(id: number, newPassword: string): Promise<void> {
     const hashedPassword = await bcrypt.hash(newPassword, 12);
     await this.usersRepository.update(id, { password: hashedPassword });
   }
 
-  async verifyEmail(id: string): Promise<void> {
+  async verifyEmail(id: number): Promise<void> {
     await this.usersRepository.update(id, { 
       emailVerifiedAt: new Date(),
       emailVerificationToken: undefined,
@@ -147,14 +147,14 @@ export class UsersService {
     });
   }
 
-  async clearPasswordResetToken(id: string): Promise<void> {
+  async clearPasswordResetToken(id: number): Promise<void> {
     await this.usersRepository.update(id, {
       passwordResetToken: undefined,
       passwordResetTokenExpiresAt: undefined,
     });
   }
 
-  async changeStatus(id: string, status: UserStatus): Promise<User> {
+  async changeStatus(id: number, status: UserStatus): Promise<User> {
     const user = await this.findById(id);
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -168,7 +168,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  async changeRole(id: string, role: UserRole): Promise<User> {
+  async changeRole(id: number, role: UserRole): Promise<User> {
     const user = await this.findById(id);
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -182,7 +182,7 @@ export class UsersService {
     return updatedUser;
   }
 
-  async getProfile(id: string): Promise<UserProfileResponse> {
+  async getProfile(id: number): Promise<UserProfileResponse> {
     const user = await this.findById(id);
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');

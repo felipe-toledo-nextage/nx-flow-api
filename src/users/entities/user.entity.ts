@@ -6,14 +6,17 @@ import {
   UpdateDateColumn,
   BeforeInsert,
   BeforeUpdate,
+  ManyToMany,
 } from 'typeorm';
 import { Exclude } from 'class-transformer';
 import * as bcrypt from 'bcryptjs';
+import { Project } from '../../projects/entities/project.entity';
 
 export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
   MANAGER = 'manager',
+  CLIENT = 'client',
 }
 
 export enum UserStatus {
@@ -25,8 +28,8 @@ export enum UserStatus {
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 
   @Column({ type: 'varchar', length: 100 })
   name: string;
@@ -72,6 +75,9 @@ export class User {
 
   @Column({ type: 'varchar', length: 255, nullable: true })
   passwordResetToken?: string;
+
+  @ManyToMany(() => Project, project => project.clients)
+  clientProjects: Project[];
 
   @CreateDateColumn({ type: 'timestamp' })
   createdAt: Date;

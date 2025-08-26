@@ -37,6 +37,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     };
 
     return {
@@ -44,6 +45,7 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
       },
       access_token: this.jwtService.sign(payload),
     };
@@ -66,6 +68,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     };
 
     return {
@@ -73,12 +76,13 @@ export class AuthService {
         id: user.id,
         email: user.email,
         name: user.name,
+        role: user.role,
       },
       access_token: this.jwtService.sign(payload),
     };
   }
 
-  async refreshToken(userId: string) {
+  async refreshToken(userId: number) {
     const user = await this.usersService.findById(userId);
     
     if (!user) {
@@ -89,6 +93,7 @@ export class AuthService {
       sub: user.id,
       email: user.email,
       name: user.name,
+      role: user.role,
     };
 
     return {

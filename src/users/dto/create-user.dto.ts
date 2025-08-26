@@ -17,7 +17,7 @@ export class CreateUserDto {
   password: string;
 
   @IsOptional()
-  @IsEnum(UserRole, { message: 'Role deve ser admin, user ou manager' })
+  @IsEnum(UserRole, { message: 'Role deve ser admin, user, manager ou client' })
   role?: UserRole;
 
   @IsOptional()

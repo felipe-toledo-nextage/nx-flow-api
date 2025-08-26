@@ -10,7 +10,7 @@ import {
   UseGuards,
   HttpCode,
   HttpStatus,
-  ParseUUIDPipe,
+  ParseIntPipe,
   NotFoundException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
@@ -37,7 +37,7 @@ export class UsersController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     const user = await this.usersService.findById(id);
     if (!user) {
       throw new NotFoundException('Usuário não encontrado');
@@ -52,7 +52,7 @@ export class UsersController {
 
   @Put(':id')
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateUserDto: UpdateUserDto,
   ) {
     return this.usersService.update(id, updateUserDto);
@@ -60,13 +60,13 @@ export class UsersController {
 
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.delete(id);
   }
 
   @Put(':id/status')
   async changeStatus(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body('status') status: UserStatus,
   ) {
     return this.usersService.changeStatus(id, status);
@@ -74,7 +74,7 @@ export class UsersController {
 
   @Put(':id/role')
   async changeRole(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body('role') role: UserRole,
   ) {
     return this.usersService.changeRole(id, role);
@@ -82,7 +82,7 @@ export class UsersController {
 
   @Put(':id/password')
   async updatePassword(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body('password') password: string,
   ) {
     await this.usersService.updatePassword(id, password);
@@ -90,7 +90,7 @@ export class UsersController {
   }
 
   @Post(':id/verify-email')
-  async verifyEmail(@Param('id', ParseUUIDPipe) id: string) {
+  async verifyEmail(@Param('id', ParseIntPipe) id: number) {
     await this.usersService.verifyEmail(id);
     return { message: 'Email verificado com sucesso' };
   }

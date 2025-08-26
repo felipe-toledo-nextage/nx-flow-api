@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
   HttpStatus,
-  ParseUUIDPipe,
+  ParseIntPipe,
   NotFoundException,
 } from '@nestjs/common';
 import { ProjectsService } from './projects.service';
@@ -44,7 +44,7 @@ export class ProjectsController {
   }
 
   @Get(':id')
-  async findOne(@Param('id', ParseUUIDPipe) id: string) {
+  async findOne(@Param('id', ParseIntPipe) id: number) {
     const project = await this.projectsService.findById(id);
     if (!project) {
       throw new NotFoundException('Projeto não encontrado');
@@ -54,7 +54,7 @@ export class ProjectsController {
 
   @Patch(':id')
   async update(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateProjectDto: UpdateProjectDto,
   ) {
     const project = await this.projectsService.update(id, updateProjectDto);
@@ -65,7 +65,7 @@ export class ProjectsController {
   }
 
   @Delete(':id')
-  async remove(@Param('id', ParseUUIDPipe) id: string) {
+  async remove(@Param('id', ParseIntPipe) id: number) {
     await this.projectsService.delete(id);
     return {
       message: 'Projeto removido com sucesso',
@@ -74,7 +74,7 @@ export class ProjectsController {
 
   @Patch(':id/status')
   async changeStatus(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body('status') status: ProjectStatus,
   ) {
     const project = await this.projectsService.changeStatus(id, status);
@@ -86,7 +86,7 @@ export class ProjectsController {
 
   @Patch(':id/health')
   async changeHealth(
-    @Param('id', ParseUUIDPipe) id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body('health') health: ProjectHealth,
   ) {
     const project = await this.projectsService.changeHealth(id, health);
@@ -96,39 +96,4 @@ export class ProjectsController {
     };
   }
 
-  @Patch(':id/progress')
-  async updateProgress(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('progress') progress: number,
-  ) {
-    const project = await this.projectsService.updateProgress(id, progress);
-    return {
-      message: 'Progresso do projeto atualizado com sucesso',
-      project,
-    };
-  }
-
-  @Patch(':id/velocity')
-  async updateVelocity(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('velocity') velocity: number,
-  ) {
-    const project = await this.projectsService.updateVelocity(id, velocity);
-    return {
-      message: 'Velocity do projeto atualizado com sucesso',
-      project,
-    };
-  }
-
-  @Patch(':id/scope-delivered')
-  async updateScopeDelivered(
-    @Param('id', ParseUUIDPipe) id: string,
-    @Body('scopeDelivered') scopeDelivered: number,
-  ) {
-    const project = await this.projectsService.updateScopeDelivered(id, scopeDelivered);
-    return {
-      message: 'Scope delivered do projeto atualizado com sucesso',
-      project,
-    };
-  }
 }
