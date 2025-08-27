@@ -25,7 +25,7 @@ import { UserSeed } from './database/seeds/user.seed';
         port: configService.get('DATABASE_PORT', 5432),
         username: configService.get('DATABASE_USER', 'postgres'),
         password: configService.get('DATABASE_PASSWORD', 'password'),
-        database: configService.get('DATABASE_NAME', 'nextage_scopeflow'),
+        database: configService.get('DATABASE_NAME', 'nx_flow'),
         entities: [User, Project],
         synchronize: configService.get('NODE_ENV') === 'development',
         logging: configService.get('NODE_ENV') === 'development',

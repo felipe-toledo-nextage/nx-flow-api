@@ -185,7 +185,7 @@ export class JiraService {
         created: issue.fields.created,
         updated: issue.fields.updated,
         resolved: issue.fields.resolutiondate,
-        sprint: this.extractSprintName(issue.fields.customfield_10016), // Sprint field pode variar
+        sprint: this.extractSprintName(issue.fields.customfield_10020), // Sprint field correto
       }));
 
       allIssues = [...allIssues, ...issues];
@@ -210,27 +210,79 @@ export class JiraService {
     }
   }
 
+  private detectStatusPatterns(issues: JiraIssue[]) {
+    // Obter todos os status únicos
+    const uniqueStatuses = [...new Set(issues.map(issue => issue.status))];
+    
+    const completed: string[] = [];
+    const inProgress: string[] = [];
+    const todo: string[] = [];
+    const blocked: string[] = [];
+    
+    // Palavras-chave para identificar padrões
+    const completedKeywords = ['concluído', 'concluido', 'done', 'closed', 'resolved', 'finalizado', 'completo', 'complete', 'finished'];
+    const inProgressKeywords = ['progresso', 'progress', 'andamento', 'desenvolvimento', 'development', 'dev', 'working', 'ativo', 'active', 'teste', 'test', 'review', 'pr', 'aguardando'];
+    const todoKeywords = ['fazer', 'todo', 'to do', 'pendente', 'pendentes', 'open', 'aberto', 'backlog', 'novo', 'new', 'planejado', 'planned'];
+    const blockedKeywords = ['bloqueado', 'blocked', 'impediment', 'impedido', 'stopped', 'parado'];
+    
+    // Classificar cada status baseado nas palavras-chave
+    uniqueStatuses.forEach(status => {
+      const statusLower = status.toLowerCase();
+      
+      if (completedKeywords.some(keyword => statusLower.includes(keyword))) {
+        completed.push(status);
+      } else if (blockedKeywords.some(keyword => statusLower.includes(keyword))) {
+        blocked.push(status);
+      } else if (inProgressKeywords.some(keyword => statusLower.includes(keyword))) {
+        inProgress.push(status);
+      } else if (todoKeywords.some(keyword => statusLower.includes(keyword))) {
+        todo.push(status);
+      } else {
+        // Status desconhecido, tentar inferir por outras características
+        // Se tem data de resolução, provavelmente é completed
+        const issuesWithThisStatus = issues.filter(issue => issue.status === status);
+        const hasResolvedIssues = issuesWithThisStatus.some(issue => issue.resolved);
+        
+        if (hasResolvedIssues) {
+          completed.push(status);
+        } else {
+          // Se não conseguir classificar, assumir como todo por segurança
+          todo.push(status);
+        }
+      }
+    });
+    
+    this.logger.log(`Status patterns detected: Completed: ${completed.join(', ')}, InProgress: ${inProgress.join(', ')}, Todo: ${todo.join(', ')}, Blocked: ${blocked.join(', ')}`);
+    
+    return {
+      completed,
+      inProgress,
+      todo,
+      blocked
+    };
+  }
+
   private calculateMetrics(issues: JiraIssue[], sprints: JiraSprint[]) {
     const totalIssues = issues.length;
-    const completedStatuses = ['Done', 'Closed', 'Resolved', 'Finalizado', 'Concluído'];
-    const inProgressStatuses = ['Em Progresso', 'In Progress', 'Development', 'Desenvolvimento'];
-    const todoStatuses = ['A fazer', 'To Do', 'Open', 'Aberto', 'Backlog'];
-
+    
+    // Detectar automaticamente os padrões de status baseado nos dados reais
+    const statusMapping = this.detectStatusPatterns(issues);
+    
     const completedIssues = issues.filter(issue => 
-      completedStatuses.some(status => issue.status.toLowerCase().includes(status.toLowerCase()))
+      statusMapping.completed.includes(issue.status)
     ).length;
 
     const inProgressIssues = issues.filter(issue =>
-      inProgressStatuses.some(status => issue.status.toLowerCase().includes(status.toLowerCase()))
+      statusMapping.inProgress.includes(issue.status)
     ).length;
 
     const todoIssues = issues.filter(issue =>
-      todoStatuses.some(status => issue.status.toLowerCase().includes(status.toLowerCase()))
+      statusMapping.todo.includes(issue.status)
     ).length;
 
     const totalStoryPoints = issues.reduce((sum, issue) => sum + (issue.storyPoints || 0), 0);
     const completedStoryPoints = issues
-      .filter(issue => completedStatuses.some(status => issue.status.toLowerCase().includes(status.toLowerCase())))
+      .filter(issue => statusMapping.completed.includes(issue.status))
       .reduce((sum, issue) => sum + (issue.storyPoints || 0), 0);
 
     // Calcular velocity média dos últimos sprints completados
@@ -241,7 +293,7 @@ export class JiraService {
     recentSprints.forEach(sprint => {
       const sprintIssues = issues.filter(issue => issue.sprint === sprint.name);
       const sprintPoints = sprintIssues
-        .filter(issue => completedStatuses.some(status => issue.status.toLowerCase().includes(status.toLowerCase())))
+        .filter(issue => statusMapping.completed.includes(issue.status))
         .reduce((sum, issue) => sum + (issue.storyPoints || 0), 0);
       totalVelocity += sprintPoints;
     });
@@ -261,9 +313,9 @@ export class JiraService {
       // 2. Issue tem mais de 14 dias e ainda não foi resolvida
       // 3. Issue foi resolvida mas está de volta em progresso
       return (
-        (daysBetween > 7 && inProgressStatuses.some(status => issue.status.toLowerCase().includes(status.toLowerCase()))) ||
+        (daysBetween > 7 && statusMapping.inProgress.includes(issue.status)) ||
         (daysBetween > 14 && !issue.resolved) ||
-        (issue.resolved && inProgressStatuses.some(status => issue.status.toLowerCase().includes(status.toLowerCase())))
+        (issue.resolved && statusMapping.inProgress.includes(issue.status))
       );
     }).length;
 
@@ -291,21 +343,17 @@ export class JiraService {
     fourWeeksAgo.setDate(fourWeeksAgo.getDate() - 28);
     const recentCompletedIssues = issues.filter(issue => {
       const resolved = issue.resolved ? new Date(issue.resolved) : null;
-      return resolved && resolved >= fourWeeksAgo && completedStatuses.some(status => 
-        issue.status.toLowerCase().includes(status.toLowerCase())
-      );
+      return resolved && resolved >= fourWeeksAgo && statusMapping.completed.includes(issue.status);
     }).length;
 
     // Calcular distribuição de status para o gráfico
+    const blockedIssues = issues.filter(issue => statusMapping.blocked.includes(issue.status)).length;
+    
     const statusDistribution = {
       todo: todoIssues,
       inProgress: inProgressIssues,
       completed: completedIssues,
-      blocked: issues.filter(issue => 
-        ['Blocked', 'Bloqueado', 'Impediment'].some(status => 
-          issue.status.toLowerCase().includes(status.toLowerCase())
-        )
-      ).length
+      blocked: blockedIssues
     };
 
     return {
