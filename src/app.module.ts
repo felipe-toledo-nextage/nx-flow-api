@@ -7,6 +7,8 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { ProjectsModule } from './projects/projects.module';
 import { JiraModule } from './integrations/jira/jira.module';
+import { ScopeAIModule } from './scope-ai/scope-ai.module';
+import { POModule } from './po/po.module';
 import { User } from './users/entities/user.entity';
 import { Project } from './projects/entities/project.entity';
 import { SeederService } from './database/seeder.service';
@@ -37,6 +39,8 @@ import { UserSeed } from './database/seeds/user.seed';
     UsersModule,
     ProjectsModule,
     JiraModule,
+    ScopeAIModule,
+    POModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeederService, UserSeed],
