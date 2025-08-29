@@ -9,6 +9,7 @@ import { ProjectsModule } from './projects/projects.module';
 import { JiraModule } from './integrations/jira/jira.module';
 import { ScopeAIModule } from './scope-ai/scope-ai.module';
 import { POModule } from './po/po.module';
+import { JarvisModule } from './jarvis/jarvis.module';
 import { User } from './users/entities/user.entity';
 import { Project } from './projects/entities/project.entity';
 import { SeederService } from './database/seeder.service';
@@ -41,6 +42,7 @@ import { UserSeed } from './database/seeds/user.seed';
     JiraModule,
     ScopeAIModule,
     POModule,
+    JarvisModule,
   ],
   controllers: [AppController],
   providers: [AppService, SeederService, UserSeed],
